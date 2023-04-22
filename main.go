@@ -12,6 +12,8 @@ import (
 	"github.com/gorilla/securecookie"
 )
 
+// User details
+
 type user struct {
 	Id        int
 	FirstName string
@@ -29,6 +31,8 @@ var cookieHandler = securecookie.New(
 var t *template.Template
 var db *sql.DB
 
+// Connecting to the database and initializing the variable to load the static files
+
 func init() {
 	t = template.Must(template.ParseGlob("static/*.html"))
 	var err error
@@ -44,6 +48,8 @@ func init() {
 	fmt.Println("Connected!")
 }
 
+// Login page serving
+
 func indexpage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	s.userName = getUsername(r)
@@ -56,6 +62,8 @@ func indexpage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/homepage", http.StatusFound)
 	}
 }
+
+//Verifying the user
 
 func loginhandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("email")
@@ -71,6 +79,8 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+
 func check(username, password string) bool {
 	row := db.QueryRow("SELECT * FROM Users WHERE Password = ? AND UserName=?", password, username)
 	if err := row.Scan(&s.Id, &s.FirstName, &s.lastName, &s.userName, &s.password); err != nil {
@@ -81,6 +91,9 @@ func check(username, password string) bool {
 	}
 	return true
 }
+
+//SignUp page serving
+
 func signup(w http.ResponseWriter, r *http.Request) {
 	s.userName = getUsername(r)
 	if s.userName == "" {
@@ -92,6 +105,9 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/homepage", http.StatusFound)
 	}
 }
+
+//Adding the new user to the database
+
 func signupHandler(w http.ResponseWriter, r *http.Request) {
 	fName := r.FormValue("fName")
 	lName := r.FormValue("lName")
@@ -126,6 +142,9 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+//Session is set once a user loged In
+
 func setSession(username string, w http.ResponseWriter) {
 	value := map[string]string{
 		"name": username,
@@ -141,6 +160,8 @@ func setSession(username string, w http.ResponseWriter) {
 	}
 }
 
+//home page serving
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	if s.userName == "" {
@@ -152,6 +173,9 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, err)
 	}
 }
+
+//checking if a user is already loged in
+
 func getUsername(r *http.Request) (userName string) {
 	cookie, err := r.Cookie("session")
 	if err == nil {
@@ -163,6 +187,9 @@ func getUsername(r *http.Request) (userName string) {
 	}
 	return
 }
+
+//Cookies are cleared once a user logout
+
 func logouthandler(w http.ResponseWriter, r *http.Request) {
 	clearSession(w)
 	http.Redirect(w, r, "/", http.StatusFound)
@@ -176,6 +203,8 @@ func clearSession(response http.ResponseWriter) {
 	}
 	http.SetCookie(response, cookie)
 }
+
+
 func main() {
 	http.HandleFunc("/", indexpage)
 	http.HandleFunc("/login-submit", loginhandler)
