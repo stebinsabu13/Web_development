@@ -1,2 +1,3 @@
 # Web_development
-Implementation of login and logout and handling sessions and cookies accordingly
+Implementation of login,logout and sigup of users and handling sessions and cookies accordingly
+The user data is stored in a mysql database 
